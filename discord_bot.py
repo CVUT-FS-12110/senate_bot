@@ -13,8 +13,19 @@ client = Groq(
 
 # Set up Discord client
 intents = discord.Intents.default()
-intents.messages = True
+intents.message_content = True
 bot = discord.Client(intents=intents)
+
+# Load the minutes from a text file or environment variable
+with open("minutes.txt", "r") as file:
+    senate_minutes = file.read()
+
+# Load additional data (list of senators and their program)
+with open("senators.txt", "r") as file:
+    senators_list = file.read()
+
+with open("programmes.txt", "r") as file:
+    programmes = file.read()
 
 @bot.event
 async def on_ready():
@@ -28,18 +39,26 @@ async def on_message(message):
 
     # If the message starts with '!ask', process it
     if message.content.startswith('!ask'):
+        print(f"Received message: {message.content}")
         query = message.content[len('!ask'):].strip()
         if query:
             try:
-                # Use the Groq API to get a response
+                # Use the Groq API to get a response, including the senate minutes, list of senators, and programmes as context
+                context = ("You have access to the following senate minutes: " + senate_minutes +
+                           "\n\nList of senators: " + senators_list +
+                           "\n\nSenators' programmes: " + programmes)
                 chat_completion = client.chat.completions.create(
                     messages=[
+                        {
+                            "role": "system",
+                            "content": context,
+                        },
                         {
                             "role": "user",
                             "content": query,
                         }
                     ],
-                    model="llama3-8b-8192",
+                    model="llama-3.1-8b-instant",
                     max_tokens=500,
                     temperature=0.1,
                 )

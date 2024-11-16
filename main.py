@@ -17,7 +17,7 @@ chat_completion = client.chat.completions.create(
         }
     ],
     model="llama3-8b-8192",
-    max_tokens=500,
+    max_tokens=200,
     temperature=0.1,
     
 )
